@@ -3,4 +3,4 @@ setuptools
 twine
 pytest
 pytest-runner
-pygame
+pygame-ce
