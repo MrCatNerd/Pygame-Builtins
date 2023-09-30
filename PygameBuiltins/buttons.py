@@ -2,86 +2,66 @@ __author__ = "Alon B.R."
 
 import pygame
 
-from pygame import Surface
-
-from PGB import HitBox2D
-
 pygame.init()
 
 
-class ImageButton2D:
-    def __init__(
-        self,
-        x: float | int,
-        y: float | int,
-        img: Surface,
-        working: bool = True,
+class _Button2D:
+    def __init__(self, rect: pygame.FRect, state: bool | None = None) -> None:
+        if state is None:
+            state = False
+        else:
+            state = state
+
+        self.rect: pygame.FRect = rect
+        self.state: bool = state
+        self._clicked = False
+
+    def update(
+        self, mouseX: float | int, mouseY: float | int, mouse_pressed: bool
     ) -> None:
-        self.img: Surface = img
-        self.hitbox: HitBox2D = HitBox2D(
-            x, y, self.img.get_width(), self.img.get_height()
-        )
-
-        self.state: bool = False
-        self.working: bool = working
-
-    def update(self, mouseX: float | int, mouseY: float | int, click: bool) -> None:
-        if self.hitbox.collidePoint((mouseX, mouseY)) and click and self.working:
-            self.activate()
-        elif self.state:
-            self.reset()
-
-    def reset(self) -> None:
-        if not self.working:
-            return
-        self.state = False
-
-    def activate(self) -> None:
-        if not self.working:
-            return
-        self.state = True
-
-    def switch(self) -> None:
-        if not self.working:
-            return
-        self.state = not self.state
-
-    def disable_button(self) -> None:
-        self.working = False
-
-    def enable_button(self) -> None:
-        self.working = True
-
-    def render(self, screen: Surface) -> None:
-        screen.blit(self.img, self.hitbox.get_pos)
+        if (
+            self.rect.collidepoint(mouseX, mouseY)
+            and mouse_pressed
+            and not self._clicked
+        ):
+            self.state = True
+            self._clicked = True
+        elif self._clicked and not mouse_pressed:
+            self._clicked = False
+        elif self.state and self._clicked == False:
+            self.state = False
 
 
-class ImageSwitch2D(ImageButton2D):
-    def __init__(
-        self,
-        x: float | int,
-        y: float | int,
-        imgOff: Surface,
-        imgOn: Surface,
-        state: bool = True,
-        working: bool = True,
+class Button2D(_Button2D):# TODO: make multiple types of img shapes etc
+    def __init__(self, rect: pygame.FRect, state: bool | None = None) -> None:
+        super().__init__(rect, state)
+
+
+class _Switch2D:
+    def __init__(self, rect: pygame.FRect, state: bool | None = None) -> None:
+        if state is None:
+            state = False
+        else:
+            state = state
+
+        self.rect: pygame.FRect = rect
+        self.state: bool = state
+        self._clicked = False
+
+    def update(
+        self, mouseX: float | int, mouseY: float | int, mouse_pressed: bool
     ) -> None:
-        self.imgOff: Surface = imgOff
-        self.imgOn: Surface = imgOn
-        self.hitbox: HitBox2D = HitBox2D(
-            x, y, self.img.get_width(), self.img.get_height()
-        )
+        if (
+            self.rect.collidepoint(mouseX, mouseY)
+            and mouse_pressed
+            and not self._clicked
+        ):
+            self.state = not self.state
+            self._clicked = True
+        elif self._clicked and not mouse_pressed:
+            self._clicked = False
 
-        self.state: bool = False
-        self.working: bool = working
+class Switch2D(_Switch2D): # TODO: make multiple types of img shapes etc
+    def __init__(self, rect: pygame.FRect, state: bool | None = None) -> None:
+        super().__init__(rect, state)
 
-        self.state = state
-
-    def update(self, mouseX: float | int, mouseY: float | int, click: bool) -> None:
-        if self.hitbox.collidePoint((mouseX, mouseY)) and click and self.working:
-            self.switch()
-
-    def render(self, screen: Surface) -> None:
-        screen.blit(
-            {False: self.imgOff, True: self.imgOn}[self.state], self.hitbox.get_pos
-        )
